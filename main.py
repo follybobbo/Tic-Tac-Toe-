@@ -1,83 +1,126 @@
+import math
 
 #Dictionary containing the values of each position on the table.
-position_dict = {
-    "pos_1": "1",
-    "pos_2": "2",
-    "pos_3": "3",
-    "pos_4": "4",
-    "pos_5": "5",
-    "pos_6": "6",
-    "pos_7": "7",
-    "pos_8": "8",
-    "pos_9": "9"
-}
 
 
-#Table For gameplay
-table = f"""
-  {position_dict.get("pos_1")} | {position_dict["pos_2"]} | {position_dict["pos_3"]}
----+---+---
-  {position_dict["pos_4"]} | {position_dict["pos_5"]} | {position_dict["pos_6"]}
----+---+---
-  {position_dict["pos_7"]} | {position_dict["pos_8"]} | {position_dict["pos_9"]}
-"""
+position_list = [" " for times in range(0, 9)]
+
 
 #list containing the all possible positional combinations that can lead to winning the game.
 solution_groups = [
-    ["pos_1", "pos_2", "pos_3"],
-    ["pos_4", "pos_5", "pos_6"],
-    ["pos_7", "pos_8", "pos_9"],
-    ["pos_1", "pos_4", "pos_7"],
-    ["pos_2", "pos_5", "pos_8"],
-    ["pos_3", "pos_6", "pos_9"],
-    ["pos_1", "pos_5", "pos_9"],
-    ["pos_3", "pos_5", "pos_7"]
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
 ]
 
 #List containing all possible choices a player can make while playing the game.
-available_positions = ["pos_1", "pos_2", "pos_3", "pos_4", "pos_5", "pos_6", "pos_7", "pos_8", "pos_9"]
+available_positions = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 #list that will contain all choices player will make while playing the game.
 player_1_selections = []
 player_2_selections = []
+player_selections_tracker = []
 
 
 #Function below loops through all possible solutions combination that can be achieved while playing the game and checks
 #for a hit.
-def check_winner():
-
-    for group in solution_groups:
-        #converts each list to a set, only set which has same value ['o', 'o', 'o'] or ['x', 'x', 'x'] will have content
-        #{'o'} or {'x'} which satisfies the condition below.
-        winner_set = set(group)
-        if len(winner_set) == 1 and "" not in winner_set:
-            winning_set = winner_set
-            winner = True
-            return_list = [winner, winning_set]
-            return return_list
-
-    winner = False
-    return_list = [winner]
-    return return_list
 
 
-#This function updates the solution_group which by default contains possible solution positions, with the users input in
-#those positions.
-def update_solution_group(player_position):
+def check_winner(board):
     for solution in solution_groups:
-        if player_position in solution:
-            index = solution.index(player_position)
-            solution[index] = position_dict[player_position]
+        index_1 = solution[0]
+        index_2 = solution[1]
+        index_3 = solution[2]
+        group = {board[index_1], board[index_2], board[index_3]}
 
-#Shows the table when called.
+        if len(group) == 1 and " " not in group:
+            for item in group:
+                return item
+    if " " not in board:
+        return "Tie"
+    else:
+        return None
+
+
+#Table For gameplay
+
 def show_table():
-    print(f"""
-              {position_dict.get("pos_1")} | {position_dict["pos_2"]} | {position_dict["pos_3"]}
-            ---+---+---
-              {position_dict["pos_4"]} | {position_dict["pos_5"]} | {position_dict["pos_6"]}
-            ---+---+---
-              {position_dict["pos_7"]} | {position_dict["pos_8"]} | {position_dict["pos_9"]}
-            """)
+    print(
+        f"""
+      {available_positions[0]} | {available_positions[1]} | {available_positions[2]}
+    ---+---+---
+      {available_positions[3]} | {available_positions[4]} | {available_positions[5]}
+    ---+---+---
+      {available_positions[6]} | {available_positions[7]} | {available_positions[8]}
+    """
+    )
+
+
+#Recursive Function that simulates the gameplay and helps AI select its next move
+
+def minimax(board, depth, is_maximizing):
+    #Check winner
+    winner_result = check_winner(board)
+
+    #TERMINAL STATES OF THE GAME
+
+        #Player wins
+    if winner_result == "O":
+        return -1
+        #AI wins
+    elif winner_result == "X":
+        return 1
+        #Draw
+    elif winner_result == "Tie":
+        return 0
+
+    #Maximizes the Score of AI, Returns either -1, 1, or 0 as best score (results of terminal state block.)
+    if is_maximizing:
+        best_score = -math.inf
+        for index, value in enumerate(board):
+            if board[index] == " ":
+                board[index] = "X"
+                score = minimax(board, depth + 1, False)
+                board[index] = " "
+                best_score = max(score, best_score)
+
+        return best_score
+    #Minimizes the score of Player, Returns same as above
+    else:
+        best_score = math.inf
+        for index, value in enumerate(board):
+            if board[index] == " ":
+                board[index] = "O"
+                score = minimax(board, depth + 1, True)
+                board[index] = " "
+                best_score = min(score, best_score)
+
+        return best_score
+
+#Here the descision of the simulation is decided, in the score > best_score line, it is ensured that at the end of the day
+#a move which leads to 1 being selected as the best_score is chosen (that is Computer wins).
+def ai_move():
+    best_score = -math.inf
+    move = None
+
+    for position, value in enumerate(position_list):
+        if position_list[position] == " ":
+            position_list[position] = "X"
+            score = minimax(position_list, 0, False)
+            position_list[position] = " "
+
+            if score > best_score:
+                best_score = score
+                move = position + 1
+    # position_dict[move] = "X"
+    return move
+
+
 
 
 
@@ -92,56 +135,51 @@ def tic_tac_toe():
         #If and Else Block Assigns player one to odd no and player two to even no
         if times % 2 != 0:
             player = "Player 1"
-            player_position = input(f"Hello Player 1, what position do you wan to fill {available_positions}: ")
+
+            #Validates Player Response
+            validated_response = False
+            while not validated_response:
+                player_position = input(f"Hello Player 1, what position do you wan to fill {available_positions}: ")
+                if player_position.isdigit():
+                    player_position = int(player_position)
+                    if player_position in available_positions:
+                        validated_response = True
+                    else:
+                        print("Please Input Valid Position")
+                else:
+                    print("please input digit not string")
+
             player_selection = "O"
             player_1_selections.append(player_position)
         else:
+            #Put AI Function here, it returns selection of AI and position
             player = "Player 2"
-            player_position = input(f"Hello Player 2, what position do you wan to fill {available_positions}: ")
+            player_position = ai_move()
+            # player_position = int(input(f"Hello Player 2, what position do you wan to fill {available_positions}: "))
             player_selection = "X"
             player_2_selections.append(player_position)
 
-        #gets index of player input, and remove player selection from available input.
-        index_available_position = available_positions.index(player_position)
-        available_positions.pop(index_available_position)
 
-        #update position selected by player with the player input which is either O or X in position_dict
-        position_dict.update({player_position: player_selection})
-        #Updates the solutions_group with the player input so possible winning positions can be tracked.
-        update_solution_group(player_position)
 
-        #Block Below contains logic for identifying when winner has been selected or if game is a draw.
+        # gets index of player input, and remove player selection from available input.
+        index_position = player_position - 1
+        position_list[index_position] = player_selection
+        available_positions[index_position] = player_selection
+        # print(position_list)
+        win = check_winner(position_list)
 
-        if len(player_1_selections) >= 3 or len(player_2_selections) >= 3:
-            result = check_winner()
-            winner_gotten = result[0]
-            if winner_gotten:
-                print(f"winner {player}")
-                show_table()
-                break
-            elif len(player_1_selections) > 4 or len(player_2_selections) > 4 and not winner_gotten:
-                show_table()
-                print("Draw")
+        if win == "X" or win == "O":
+            print(f"Player {player} wins {win}")
+            show_table()
+            break
 
+
+
+tic_tac_toe()
 
 
 
 """TO DO: CREATE A BRANCH IN GIT CALLED AI, THEN CREATE SMART AI THAT WILL ENUMERATE THE AVAILABLE POSITION AND CHOOSE THE BEST POSITION."""
-
-
-def minimax(board, is_maximizing):
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
