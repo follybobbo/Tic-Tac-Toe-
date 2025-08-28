@@ -1,8 +1,9 @@
 import math
+from random import Random
 
 #Dictionary containing the values of each position on the table.
 
-
+rand = Random()
 position_list = [" " for times in range(0, 9)]
 
 
@@ -120,6 +121,18 @@ def ai_move():
     # position_dict[move] = "X"
     return move
 
+#Easy AI difficulty, chooses available position on table at Random
+def ai_easy(board_state):
+    length = len(board_state)
+    position_gotten = False
+    while not position_gotten:
+        position = rand.choice(board_state)
+        if position != "X" and position != "O":
+            position_gotten = True
+            print(position)
+            return position
+
+
 
 
 
@@ -127,6 +140,8 @@ def ai_move():
 #Contains Logic For gameplay.
 def tic_tac_toe():
     print("Welcome tp the Tic-Tac, Player 1 is X and Player 2 is O")
+    difficulty = input("Please Choose Difficulty: Easy or Hard: ").capitalize()
+
 
     #Runs the code below 9 times since there are only 9 slots in the game.
     for times in range(1, 10):
@@ -154,7 +169,11 @@ def tic_tac_toe():
         else:
             #Put AI Function here, it returns selection of AI and position
             player = "Player 2"
-            player_position = ai_move()
+            if difficulty == "Easy":
+                player_position = ai_easy(available_positions)
+            elif difficulty == "Hard":
+                player_position = ai_move()
+
             # player_position = int(input(f"Hello Player 2, what position do you wan to fill {available_positions}: "))
             player_selection = "X"
             player_2_selections.append(player_position)
